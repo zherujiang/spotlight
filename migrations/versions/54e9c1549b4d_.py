@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 58e5ac8b9773
+Revision ID: 54e9c1549b4d
 Revises: 
-Create Date: 2022-07-24 11:02:39.643379
+Create Date: 2022-07-24 17:34:20.169435
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '58e5ac8b9773'
+revision = '54e9c1549b4d'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,13 +24,16 @@ def upgrade():
     sa.Column('city', sa.String(length=120), nullable=False),
     sa.Column('state', sa.String(length=120), nullable=False),
     sa.Column('phone', sa.String(length=120), nullable=True),
-    sa.Column('genres', sa.String(length=500), nullable=False),
+    sa.Column('genres', sa.ARRAY(sa.String(length=120), dimensions=1), nullable=False),
     sa.Column('image_link', sa.String(length=500), nullable=True),
     sa.Column('facebook_link', sa.String(length=120), nullable=True),
     sa.Column('website', sa.String(length=120), nullable=True),
     sa.Column('seeking_venue', sa.Boolean(), nullable=True),
     sa.Column('seeking_description', sa.Text(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('phone'),
+    sa.UniqueConstraint('website')
     )
     op.create_table('Venue',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -39,13 +42,16 @@ def upgrade():
     sa.Column('state', sa.String(length=120), nullable=False),
     sa.Column('address', sa.String(length=120), nullable=False),
     sa.Column('phone', sa.String(length=120), nullable=True),
-    sa.Column('genres', sa.String(length=500), nullable=False),
+    sa.Column('genres', sa.ARRAY(sa.String(length=120), dimensions=1), nullable=False),
     sa.Column('image_link', sa.String(length=500), nullable=True),
     sa.Column('facebook_link', sa.String(length=120), nullable=True),
     sa.Column('website', sa.String(length=120), nullable=True),
     sa.Column('seeking_talent', sa.Boolean(), nullable=True),
     sa.Column('seeking_description', sa.Text(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('phone'),
+    sa.UniqueConstraint('website')
     )
     op.create_table('Shows',
     sa.Column('venue_id', sa.Integer(), nullable=False),

@@ -48,7 +48,7 @@ class Venue(db.Model):
     state = db.Column(db.String(120), nullable=False)
     address = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120), unique=True)
-    genres = db.Column(db.String(500), nullable=False)
+    genres = db.Column(db.ARRAY(db.String(120), dimensions=1), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120), unique=True)
@@ -66,7 +66,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120), nullable=False)
     state = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120), unique=True)
-    genres = db.Column(db.String(500), nullable=False)
+    genres = db.Column(db.ARRAY(db.String(120), dimensions=1), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120), unique=True)
@@ -241,8 +241,6 @@ def create_venue_submission():
   form = VenueForm()
   error = False
   #the genre field from form submission is a list, convert list to string
-  genres = form.genres.data
-  genreString = ','.join(genres)
   # # TODO: modify data to be the data object returned from db insertion
   try:
     newVenue = Venue(
@@ -251,7 +249,7 @@ def create_venue_submission():
       state = form.state.data,
       address = form.address.data,
       phone = form.phone.data,
-      genres = genreString,
+      genres = form.genres.data,
       image_link = form.image_link.data,
       facebook_link = form.facebook_link.data,
       website = form.website_link.data,
@@ -460,8 +458,6 @@ def create_artist_submission():
   # TODO: insert form data as a new Artist record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
   form = ArtistForm()
-  genres = form.genres.data
-  genreString = ','.join(genres)
   error = False
   try:
     newArtist = Artist(
@@ -469,7 +465,7 @@ def create_artist_submission():
       city = form.city.data,
       state = form.state.data,
       phone = form.phone.data,
-      genres = genreString,
+      genres = form.genres.data,
       image_link = form.image_link.data,
       facebook_link = form.facebook_link.data,
       website = form.website_link.data,
