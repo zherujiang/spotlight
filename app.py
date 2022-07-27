@@ -15,6 +15,7 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+from datetime import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -132,18 +133,33 @@ def venues():
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+  # TODO: implement search on venues with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-  response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }
-  return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+  response = {}
+  keyword = request.form.get('search_term')
+  venues = db.session.query(Venue).filter(Venue.name.ilike('%'+keyword+'%')).all()
+  response['count'] = len(venues)
+  response['data'] = []
+  for venue in venues:
+    venueData = {}
+    venueData['id'] = venue.id
+    venueData['name'] = venue.name
+    num_up_shows = db.session.query(Shows).filter(Shows.venue_id==venue.id, Shows.start_time > datetime.today()).count()
+    venueData['num_upcoming_shows'] = num_up_shows
+    print(venueData)
+    response['data'].append(venueData)
+  return render_template('pages/search_venues.html', results=response, search_term=keyword)
+
+  # # mock data
+  # response={
+  #   "count": 1,
+  #   "data": [{
+  #     "id": 2,
+  #     "name": "The Dueling Pianos Bar",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  # }
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
@@ -304,15 +320,29 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
-  response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
-  }
-  return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+  response = {}
+  keyword = request.form.get('search_term')
+  artists = db.session.query(Artist).filter(Artist.name.ilike('%'+keyword+'%')).all()
+  response['count'] = len(artists)
+  response['data'] = []
+  for artist in artists:
+    artistData = {}
+    artistData['id'] = artist.id
+    artistData['name'] = artist.name
+    num_up_shows = db.session.query(Shows).filter(Shows.artist_id==artist.id, Shows.start_time > datetime.today()).count()
+    artistData['num_upcoming_shows'] = num_up_shows
+    print('matching artist', artistData)
+    response['data'].append(artistData)
+  return render_template('pages/search_artists.html', results=response, search_term=keyword)
+  ## mock data
+  # response={
+  #   "count": 1,
+  #   "data": [{
+  #     "id": 4,
+  #     "name": "Guns N Petals",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  # }
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
