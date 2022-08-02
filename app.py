@@ -20,15 +20,20 @@ from datetime import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
-
-app = Flask(__name__)
-moment = Moment(app)
-app.config.from_object('config')
 db = SQLAlchemy()
-db.init_app(app)
+def create_app(config_filename):
+  app = Flask(__name__)
+  app.config.from_object(config_filename)
+  # The init_app method is used to support the factory pattern for creating apps
+  db.init_app(app)
+  return app
+
+app = create_app('config')
 
 # TODO: connect to a local postgresql database
 migrate = Migrate(app, db)
+
+moment = Moment(app)
 
 #----------------------------------------------------------------------------#
 # Models.
