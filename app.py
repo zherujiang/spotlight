@@ -9,81 +9,23 @@ import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from sqlalchemy import select, func
+from flask_migrate import Migrate
 import logging
 from logging import Formatter, FileHandler
-from flask_wtf import Form
 from forms import *
 from datetime import datetime
+from models import db, setup_db, Venue, Artist, Shows
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
-db = SQLAlchemy()
 def create_app(config_filename):
   app = Flask(__name__)
-  app.config.from_object(config_filename)
-  # The init_app method is used to support the factory pattern for creating apps
-  db.init_app(app)
+  setup_db(app, config_filename)
+  migrate = Migrate(app, db)
   return app
 
 app = create_app('config')
-
-# TODO: connect to a local postgresql database
-migrate = Migrate(app, db)
-
-moment = Moment(app)
-
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
-class Shows(db.Model):
-  __tablename__ = 'Shows'
-  venue_id = db.Column(db.ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True)
-  artist_id = db.Column(db.ForeignKey('Artist.id', ondelete='CASCADE'), primary_key=True)
-  start_time = db.Column(db.DateTime, nullable=False)
-  venue = db.relationship('Venue', back_populates='shows')
-  artist = db.relationship('Artist', back_populates='shows')
-
-class Venue(db.Model):
-  __tablename__ = 'Venue'
-
-  id = db.Column(db.Integer, primary_key=True)
-  name = db.Column(db.String, unique=True, nullable=False)
-  city = db.Column(db.String(120), nullable=False)
-  state = db.Column(db.String(120), nullable=False)
-  address = db.Column(db.String(120), nullable=False)
-  phone = db.Column(db.String(120))
-  genres = db.Column(db.ARRAY(db.String(120), dimensions=1), nullable=False)
-  image_link = db.Column(db.String(500))
-  facebook_link = db.Column(db.String(120))
-  website = db.Column(db.String(120))
-  seeking_talent = db.Column(db.Boolean, default = False)
-  seeking_description = db.Column(db.Text)
-  shows = db.relationship('Shows', back_populates='venue', cascade='all, delete')
-
-  # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-class Artist(db.Model):
-  __tablename__ = 'Artist'
-
-  id = db.Column(db.Integer, primary_key=True)
-  name = db.Column(db.String, unique=True, nullable=False)
-  city = db.Column(db.String(120), nullable=False)
-  state = db.Column(db.String(120), nullable=False)
-  phone = db.Column(db.String(120))
-  genres = db.Column(db.ARRAY(db.String(120), dimensions=1), nullable=False)
-  image_link = db.Column(db.String(500))
-  facebook_link = db.Column(db.String(120))
-  website = db.Column(db.String(120))
-  seeking_venue = db.Column(db.Boolean, default = False)
-  seeking_description = db.Column(db.Text)
-  shows = db.relationship('Shows', back_populates='artist', cascade='all, delete')
-
-  # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 #----------------------------------------------------------------------------#
 # Filters.
