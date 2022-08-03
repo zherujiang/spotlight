@@ -1,8 +1,24 @@
 from datetime import datetime
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
-from wtforms.validators import DataRequired, AnyOf, URL
+from wtforms.validators import DataRequired, AnyOf, URL, ValidationError
+import phonenumbers
 
+def phone_validator(form, field):
+    # print('validating')
+    if len(field.data) > 16:
+        raise ValidationError('Invalid phone number.')
+    try:
+        input_number = phonenumbers.parse(field.data)
+        if not (phonenumbers.is_valid_number(input_number)):
+            print('invalid')
+            raise ValidationError('Invalid phone number.')
+    except:
+        input_number = phonenumbers.parse("+1"+field.data)
+        if not (phonenumbers.is_valid_number(input_number)):
+            print('invalid')
+            raise ValidationError('Invalid phone number.')
+            
 class ShowForm(Form):
     artist_id = StringField(
         'artist_id'
@@ -85,6 +101,7 @@ class VenueForm(Form):
     phone = StringField(
         'phone'
     )
+    validate_phone = phone_validator
     image_link = StringField(
         'image_link'
     )
@@ -117,7 +134,7 @@ class VenueForm(Form):
         'facebook_link', validators=[URL()]
     )
     website_link = StringField(
-        'website_link'
+        'website_link', validators=[URL()]
     )
 
     seeking_talent = BooleanField( 'seeking_talent' )
@@ -125,7 +142,6 @@ class VenueForm(Form):
     seeking_description = StringField(
         'seeking_description'
     )
-
 
 
 class ArtistForm(Form):
@@ -192,9 +208,10 @@ class ArtistForm(Form):
         ]
     )
     phone = StringField(
-        # TODO implement validation logic for state
+        # TODO implement validation logic for phone number
         'phone'
     )
+    validate_phone = phone_validator
     image_link = StringField(
         'image_link'
     )
@@ -228,7 +245,7 @@ class ArtistForm(Form):
      )
 
     website_link = StringField(
-        'website_link'
+        'website_link', validators=[URL()]
      )
 
     seeking_venue = BooleanField( 'seeking_venue' )
@@ -236,4 +253,3 @@ class ArtistForm(Form):
     seeking_description = StringField(
             'seeking_description'
      )
-
