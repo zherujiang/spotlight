@@ -157,24 +157,27 @@ def show_venue(venue_id):
   data['past_shows'] = list()
   data['upcoming_shows'] = list()
   
-  past_shows = db.session.query(Shows.artist_id, Shows.start_time).filter(Shows.venue_id == venue.id, Shows.start_time < datetime.today()).all()
-  upcoming_shows = db.session.query(Shows.artist_id, Shows.start_time).filter(Shows.venue_id == venue.id, Shows.start_time >= datetime.today()).all()
+  # make sure to select both Shows and Artist in the query, so that the query results can contain columns from both tables
+  past_shows_query = db.session.query(Shows, Artist).join(Artist).filter(Shows.venue_id == venue_id).filter(Shows.start_time < datetime.now()).all()
+  upcoming_shows_query = db.session.query(Shows, Artist).join(Artist).filter(Shows.venue_id == venue_id).filter(Shows.start_time >= datetime.now()).all()
   
-  for show in past_shows:
-    event = {}
-    event['artist_id'] = show.artist_id
-    event['artist_name'] = db.session.query(Artist).get(show.artist_id).name
-    event['artist_image_link'] = db.session.query(Artist).get(show.artist_id).image_link
-    event['start_time'] = str(show.start_time)
-    data['past_shows'].append(event)
-  
-  for show in upcoming_shows:
-    event = {}
-    event['artist_id'] = show.artist_id
-    event['artist_name'] = db.session.query(Artist).get(show.artist_id).name
-    event['artist_image_link'] = db.session.query(Artist).get(show.artist_id).image_link
-    event['start_time'] = str(show.start_time)
-    data['upcoming_shows'].append(event)
+  for show, artist in past_shows_query:
+    performance = {
+      'artist_id': artist.id,
+      'artist_name': artist.name,
+      'artist_image_link': artist.image_link,
+      'start_time': str(show.start_time)
+    }
+    data['past_shows'].append(performance)
+    
+  for show, artist in upcoming_shows_query:
+    performance = {
+      'artist_id': artist.id,
+      'artist_name': artist.name,
+      'artist_image_link': artist.image_link,
+      'start_time': str(show.start_time)
+    }
+    data['upcoming_shows'].append(performance)
   
   data['past_shows_count'] = len(data['past_shows'])
   data['upcoming_shows_count'] = len(data['upcoming_shows'])
@@ -411,32 +414,36 @@ def show_artist(artist_id):
   data['upcoming_shows'] = list()
   
   # past_shows and upcoming_shows are row objects as list of tuples
-  past_shows = db.session.query(Shows.venue_id, Shows.start_time).filter(Shows.artist_id==artist.id, Shows.start_time < datetime.now()).all()
-  upcoming_shows = db.session.query(Shows).filter(Shows.artist_id==artist.id, Shows.start_time >= datetime.now()).all()
-  # print('past_shows:', past_shows)
-  # print('upcoming_shows:', upcoming_shows)
+  past_shows_query = db.session.query(Shows, Venue).join(Venue).filter(Shows.artist_id == artist_id).filter(Shows.start_time < datetime.now()).all()
+  upcoming_shows_query = db.session.query(Shows, Venue).join(Venue).filter(Shows.artist_id == artist_id).filter(Shows.start_time >= datetime.now()).all()
   
-  for show in past_shows:
-    event = {}
-    event['venue_id'] = show.venue_id
-    event['venue_name'] = db.session.query(Venue).get(show.venue_id).name
-    event['venue_image_link'] = db.session.query(Venue).get(show.venue_id).image_link
-    event['start_time'] = str(show.start_time)
-    data['past_shows'].append(event)
-    #print('past event:', event)
+  # both tables/entities need to be selected in the query in order to return columns from both tables, see below query objects
+  # print(db.session.query(Shows, Venue))
+  # print(db.session.query(Shows, Venue).join(Venue))
+  # print(db.session.query(Shows))
+  # print(db.session.query(Shows).join(Venue))
   
-  for show in upcoming_shows:
-    event = {}
-    event['venue_id'] = show.venue_id
-    event['venue_name'] = db.session.query(Venue).get(show.venue_id).name
-    event['venue_image_link'] = db.session.query(Venue).get(show.venue_id).image_link
-    event['start_time'] = str(show.start_time)
-    data['upcoming_shows'].append(event)
-    #print('future event:', event)
+  for show, venue in past_shows_query:
+    performance = {
+      'venue_id': venue.id,
+      'venue_name': venue.name,
+      'venue_image_link': venue.image_link,
+      'start_time': str(show.start_time)
+    }
+    data['past_shows'].append(performance)
+  
+  for show, venue in upcoming_shows_query:
+    performance = {
+      'venue_id': venue.id,
+      'venue_name': venue.name,
+      'venue_image_link': venue.image_link,
+      'start_time': str(show.start_time)
+    }
+    data['upcoming_shows'].append(performance)
     
   data['past_shows_count'] = len(data['past_shows'])
   data['upcoming_shows_count'] = len(data['upcoming_shows'])
-  print('all artsit data:', data)
+  # print('all artsit data:', data)
   return render_template('pages/show_artist.html', artist=data)
 
   ## mock data
